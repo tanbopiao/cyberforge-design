@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberForge 出题—作答—评分链路标准 V0.1</title>
+<style>
+:root{
+  --ink:#1c2430;
+  --ink-soft:#3f4a5a;
+  --ink-faint:#77808f;
+  --paper:#f7f8fa;
+  --card:#ffffff;
+  --line:#d8dde4;
+  --c-task:#b45a10;   /* 出题·任务包 */
+  --c-agent:#0f766e;  /* 被测智能体 */
+  --c-score:#4338ca;  /* 评分器 */
+  --c-evid:#57606a;   /* 证据档案 */
+  --warn:#a33b3b;
+  --mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.8;}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px;}
+@media(min-width:820px){.wrap{max-width:820px;}}
+header{padding:52px 0 34px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--c-task);text-transform:uppercase;}
+h1{font-size:29px;line-height:1.4;margin-top:14px;}
+.sub{margin-top:12px;font-size:14.5px;color:var(--ink-faint);}
+.status{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--warn);border:1px solid var(--warn);padding:3px 10px;}
+section{padding:40px 0 6px;}
+h2{font-size:22px;margin-bottom:6px;}
+h2 .no{font-family:var(--mono);font-size:13px;color:var(--c-task);margin-right:10px;}
+h3{font-size:17px;margin:24px 0 8px;}
+p{color:var(--ink-soft);margin-bottom:14px;}
+p strong,li strong{color:var(--ink);}
+.note{font-size:13.5px;color:var(--ink-faint);}
+
+/* 流程图 */
+.flow{margin:26px 0;}
+.flow svg{width:100%;max-width:100%;height:auto;display:block;}
+
+/* 字段表 */
+.tbl{overflow-x:auto;margin:18px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);min-width:560px;}
+th,td{padding:9px 12px;text-align:left;border:1px solid var(--line);vertical-align:top;}
+th{background:var(--ink);color:#fff;font-family:var(--mono);font-weight:600;font-size:12px;}
+td code,p code,li code{font-family:var(--mono);font-size:12.5px;background:#eceff3;padding:1px 5px;border-radius:3px;}
+tr td:first-child{white-space:nowrap;}
+.req{color:var(--c-task);font-weight:600;}
+
+/* 代码 */
+pre{background:#242a33;color:#dbe2ec;padding:16px;border-radius:6px;overflow-x:auto;margin:14px 0;}
+pre code{font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre;}
+.cap{font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-top:-8px;margin-bottom:16px;letter-spacing:.05em;}
+
+/* 评分卡 */
+.score-cards{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0;}
+@media(min-width:600px){.score-cards{grid-template-columns:1fr 1fr;}}
+.sc{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c-score);padding:14px 16px;}
+.sc b{display:block;font-size:15.5px;margin-bottom:4px;}
+.sc span{font-size:13.5px;color:var(--ink-soft);}
+.sc .w{font-family:var(--mono);font-size:12px;color:var(--c-score);}
+
+/* 证据链 */
+.chain{margin:20px 0;padding:16px;background:var(--card);border:1px solid var(--line);}
+.chain .step{display:flex;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px;align-items:baseline;}
+.chain .step:last-child{border-bottom:none;}
+.chain .h{font-family:var(--mono);color:var(--c-evid);min-width:110px;}
+
+.limit{margin:26px 0;padding:16px;border:1px solid var(--warn);background:rgba(163,59,59,.05);font-size:14px;color:var(--ink-soft);}
+.limit b{color:var(--warn);}
+footer{padding:30px 0 60px;font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.1em;}
+</style>
+</head>
+<body data-visualization-style="knowledge-technology">
+<div class="wrap">
+
+<header>
+  <div class="kicker">CyberForge · Embodied Agent Eval Pipeline</div>
+  <h1>出题—作答—评分链路标准<br>V0.1</h1>
+  <div class="sub">把「能不能，测一下就知道」变成可执行协议：任何智能体持本标准即可接入车间参加评测。</div>
+  <div class="status" style="color:#0f766e;border-color:#0f766e">STATUS: V0.2 LIVE — 接口已部署上线并完成公网端到端验证（2026-11-14）</div>
+</header>
+
+<!-- 01 总览 -->
+<section>
+  <h2><span class="no">01</span>链路总览：四方角色，两份数据契约</h2>
+  <p>整个评测链路由四个角色构成。数据只在两处需要约定格式：<strong>任务包</strong>（出题方→被测体）和<strong>执行记录</strong>（被测体→评分器），其余环节都是标准工程件。</p>
+  <div class="flow">
+    <svg viewBox="0 0 780 150" role="img" aria-label="出题方、被测智能体、评分器、证据档案四方流程图">
+      <defs>
+        <marker id="arw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#57606a"/>
+        </marker>
+      </defs>
+      <g font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="13">
+        <!-- 出题方 -->
+        <rect x="10" y="45" width="150" height="60" fill="#fff" stroke="#b45a10" stroke-width="2"/>
+        <text x="85" y="70" text-anchor="middle" fill="#1c2430" font-weight="bold">出题方 / 车间</text>
+        <text x="85" y="90" text-anchor="middle" fill="#57606a" font-size="11">CF-Task 任务包</text>
+        <!-- 被测智能体 -->
+        <rect x="215" y="45" width="170" height="60" fill="#fff" stroke="#0f766e" stroke-width="2"/>
+        <text x="300" y="70" text-anchor="middle" fill="#1c2430" font-weight="bold">被测智能体</text>
+        <text x="300" y="90" text-anchor="middle" fill="#57606a" font-size="11">读取任务 → 执行动作</text>
+        <!-- 评分器 -->
+        <rect x="440" y="45" width="150" height="60" fill="#fff" stroke="#4338ca" stroke-width="2"/>
+        <text x="515" y="70" text-anchor="middle" fill="#1c2430" font-weight="bold">评分器</text>
+        <text x="515" y="90" text-anchor="middle" fill="#57606a" font-size="11">确定性核验</text>
+        <!-- 档案 -->
+        <rect x="645" y="45" width="125" height="60" fill="#fff" stroke="#57606a" stroke-width="2"/>
+        <text x="707" y="70" text-anchor="middle" fill="#1c2430" font-weight="bold">证据档案</text>
+        <text x="707" y="90" text-anchor="middle" fill="#57606a" font-size="11">CF-Run 记录</text>
+        <!-- 箭头 -->
+        <line x1="160" y1="75" x2="210" y2="75" stroke="#57606a" stroke-width="1.5" marker-end="url(#arw)"/>
+        <text x="185" y="38" text-anchor="middle" fill="#b45a10" font-size="11" font-family="monospace">CF-Task</text>
+        <line x1="385" y1="75" x2="435" y2="75" stroke="#57606a" stroke-width="1.5" marker-end="url(#arw)"/>
+        <text x="410" y="38" text-anchor="middle" fill="#0f766e" font-size="11" font-family="monospace">CF-Run</text>
+        <line x1="590" y1="75" x2="640" y2="75" stroke="#57606a" stroke-width="1.5" marker-end="url(#arw)"/>
+        <text x="615" y="38" text-anchor="middle" fill="#4338ca" font-size="11" font-family="monospace">得分+依据</text>
+        <!-- 证据回流虚线 -->
+        <path d="M707,110 L707,135 L85,135 L85,110" fill="none" stroke="#57606a" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="396" y="130" text-anchor="middle" fill="#57606a" font-size="11">证据链可回溯：任务包哈希 + 执行日志 + 评分依据 逐环锚定</text>
+      </g>
+    </svg>
+  </div>
+  <p>颜色语义全文一致：<strong style="color:var(--c-task)">橙 = 任务与出题</strong>、<strong style="color:var(--c-agent)">青 = 被测智能体</strong>、<strong style="color:var(--c-score)">蓝紫 = 评分</strong>、<strong style="color:var(--c-evid)">灰 = 证据</strong>。</p>
+</section>
+
+<!-- 02 任务包 -->
+<section>
+  <h2><span class="no">02</span>CF-Task 任务包格式</h2>
+  <p>任务包是出题方与被测体之间唯一的输入契约。字段分三层：<strong>身份层</strong>（谁出的题、哪一期）、<strong>场景层</strong>（车间里什么状态、要做什么）、<strong>评分层</strong>（怎么算过关，逐条可判定）。</p>
+  <div class="tbl">
+  <table>
+    <tr><th>字段</th><th>必填</th><th>说明</th></tr>
+    <tr><td><code>task_id</code></td><td class="req">必填</td><td>全局唯一，格式 <code>CF-T-&lt;期号&gt;-&lt;序号&gt;</code>，如 <code>CF-T-E01-003</code></td></tr>
+    <tr><td><code>spec_version</code></td><td class="req">必填</td><td>本标准版本，当前 <code>0.1</code>；接口变更时递增</td></tr>
+    <tr><td><code>station</code></td><td class="req">必填</td><td>任务所在工位，枚举：<code>welding</code> 焊装 / <code>painting</code> 涂装 / <code>assembly</code> 总装 / <code>logistics</code> 线边物流</td></tr>
+    <tr><td><code>task_type</code></td><td class="req">必填</td><td>枚举：<code>operation</code> 工位作业 / <code>exception</code> 异常处置 / <code>throughput</code> 节拍任务</td></tr>
+    <tr><td><code>initial_state</code></td><td class="req">必填</td><td>对象数组：每个元素含 <code>asset_id</code>（对应车间资产编号 CF-001~052）、<code>pose</code>（坐标与朝向）、<code>state</code>（如 <code>moving</code> / <code>idle</code> / <code>alarm</code>）</td></tr>
+    <tr><td><code>goal</code></td><td class="req">必填</td><td>自然语言任务目标 + 机器可判定的 <code>accept</code> 条件数组</td></tr>
+    <tr><td><code>constraints</code></td><td>选填</td><td>安全约束：禁入区、停机窗口、节拍上限（秒）</td></tr>
+    <tr><td><code>timeout_s</code></td><td class="req">必填</td><td>最长执行时间；超时按 <code>timeout</code> 判定，不是零分而是「未完成」</td></tr>
+    <tr><td><code>scoring</code></td><td class="req">必填</td><td>三条确定性检查项及其权重，见第 04 节</td></tr>
+  </table>
+  </div>
+  <h3>示例：焊装工位白车身转运任务</h3>
+  <p>下面这题直接挂靠车间真实资产——白车身在焊装工位（x=-6），要求 AGV 把它运到总装工位（x=6），全程不得穿过涂装工位停机区：</p>
+  <pre><code>{
+  "task_id": "CF-T-E01-001",
+  "spec_version": "0.1",
+  "station": "welding",
+  "task_type": "operation",
+  "initial_state": [
+    {"asset_id": "CF-048", "pose": [-6, 0, 0], "state": "idle"},
+    {"asset_id": "CF-047", "pose": [-8, 0, 2], "state": "idle"}
+  ],
+  "goal": {
+    "text": "将焊装工位白车身经环形轨道转运至总装工位",
+    "accept": [
+      "asset CF-048 pose.x ∈ [5.5, 6.5]",
+      "asset CF-048 未进入 painting 停机区",
+      "执行动作序列完整可回放"
+    ]
+  },
+  "constraints": { "no_go_zones": ["painting_halt"], "cycle_limit_s": 300 },
+  "timeout_s": 600,
+  "scoring": {
+    "result_correct": 0.6,
+    "process_compliance": 0.3,
+    "safety_compliance": 0.1
+  }
+}</code></pre>
+  <div class="cap">CF-Task v0.1 示例 · 坐标沿用车间演示页 carStages 落位（焊装 -6 / 涂装 0 / 总装 +6）</div>
+</section>
+
+<!-- 03 接口 -->
+<section>
+  <h2><span class="no">03</span>CF-Submit 提交接口</h2>
+  <p>被测智能体与评分器之间只走两个调用。接口部署上线前，以下为约定稿：</p>
+  <div class="tbl">
+  <table>
+    <tr><th>调用</th><th>方向</th><th>输入 → 输出</th></tr>
+    <tr><td><code>POST /cf/v0/task/&lt;task_id&gt;/runs</code></td><td>智能体 → 车间</td><td>提交执行动作序列与状态快照 → 返回 <code>run_id</code>（全局唯一）</td></tr>
+    <tr><td><code>GET /cf/v0/runs/&lt;run_id&gt;</code></td><td>任意方可查</td><td>返回评分结果、逐项检查明细与证据哈希；<strong>只读、无需鉴权的部分不包含车间敏感配置</strong></td></tr>
+  </table>
+  </div>
+  <p>动作序列中每个元素记录 <code>t</code>（时刻）、<code>agent_action</code>（做了什么）、<code>observed_state</code>（当时车间状态），保证任何一次作答都可以离线重放——这是「过程可核验」的落点。</p>
+</section>
+
+<!-- 04 评分 -->
+<section>
+  <h2><span class="no">04</span>评分口径：三条确定性检查</h2>
+  <p>每一题的总分是三项加权，权重写在任务包里、逐题可不同，但三项含义永远固定：</p>
+  <div class="score-cards">
+    <div class="sc"><span class="w">权重默认 0.6</span><b>结果正确性 result_correct</b>
+      <span>终态是否达成：资产坐标、工位状态、产出数量逐条比对 <code>accept</code> 数组，每条通过记 1，按条数取比例。机器可判，零主观分。</span></div>
+    <div class="sc"><span class="w">权重默认 0.3</span><b>过程合规 process_compliance</b>
+      <span>动作序列是否完整、顺序是否合理、有无跳步或凭空生成动作（伪动作判不合格）。回放日志逐帧核验。</span></div>
+    <div class="sc"><span class="w">权重默认 0.1</span><b>安全合规 safety_compliance</b>
+      <span>是否进入禁入区、异常时是否在约束窗口内停机、节拍是否超限。安全项一票否决规则：进入禁入区直接计 0 分，无论结果多好。</span></div>
+    <div class="sc"><span class="w">三项之外</span><b>超时与失败的处理</b>
+      <span>超时按「未完成」计，结果项不得分、过程项按已完成部分核验；这保证「做了一半但安全」与「做完但违规」能被区分开。</span></div>
+  </div>
+</section>
+
+<!-- 05 证据链 -->
+<section>
+  <h2><span class="no">05</span>证据链：每一环都有哈希锚定</h2>
+  <p>沿用作品已在用的可验证方法论，每次评测产生一条四环证据链，逐环内容哈希引用上一环：</p>
+  <div class="chain">
+    <div class="step"><span class="h">环节 1 · 出题</span>任务包全文哈希 → 锚定「考的是这道题」</div>
+    <div class="step"><span class="h">环节 2 · 作答</span>动作序列与状态快照哈希 → 锚定「答的是这份记录」</div>
+    <div class="step"><span class="h">环节 3 · 评分</span>逐项检查明细哈希 → 锚定「分是这么算出来的」</div>
+    <div class="step"><span class="h">环节 4 · 归档</span>链尾哈希写入评测台账 → 事后任何人可复算核对</div>
+  </div>
+  <p>这条链和成长轨迹页的「发现—修复—验证」记录属于同一套证据体系：评测结论不靠自述，靠可复算。</p>
+</section>
+
+<!-- 05+ 难度分层 -->
+<section>
+  <h2><span class="no">05+</span>难度分层：L1 入门卷 · L2 进阶卷 · L3 硬骨头卷</h2>
+  <p>同一套链路，三种考试强度。分层的目的不是把所有智能体考趴下，而是让「说与做」的分离程度被逐级放大、逐级量出来——<strong>难度分层本身就是第一度量轴</strong>。</p>
+  <div class="tbl">
+  <table>
+    <tr><th>层级</th><th>考核什么</th><th>题目形态</th><th>过滤什么</th></tr>
+    <tr>
+      <td><code>L1</code> 入门卷</td>
+      <td>逻辑态筛查</td>
+      <td>工位作业单步任务：按任务包把资产从 A 搬到 B，路径无陷阱，<code>accept</code> 条件直给</td>
+      <td>过滤掉连任务包都读不懂、或只会复述目标不产动作的智能体</td>
+    </tr>
+    <tr>
+      <td><code>L2</code> 进阶卷</td>
+      <td>过程合规</td>
+      <td>带禁入区、节拍约束的多步任务；动作序列必须完整可回放，跳步、伪动作、凭空生成动作一律不合格</td>
+      <td>过滤掉「说得像已执行」的逻辑态选手——过程分核验的就是每一帧动作是否真实发生</td>
+    </tr>
+    <tr>
+      <td><code>L3</code> 硬骨头卷</td>
+      <td>物理闭环</td>
+      <td>接入真实物理引擎（碰撞、动力学、ROS）后的闭环任务；状态由仿真器回灌，不接受任何自述</td>
+      <td>过滤掉在 L2 仍靠概率蒙对动作序列的选手——物理反馈不可伪造，执行态唯一真源</td>
+    </tr>
+  </table>
+  </div>
+  <p>三档共用第 04 节的三条评分口径，只是逐档加严：L1 侧重结果正确性，L2 过程合规权重自然上调，L3 安全合规在物理世界里有一票否决的现实意义。<strong>一个智能体在 L1 满分、L2 归零，本身就是有效结论</strong>——它准确刻画了「说与做」的分离度。</p>
+</section>
+
+<!-- 06 限制 -->
+<section>
+  <h2><span class="no">06</span>边界与下一步</h2>
+  <div class="limit">
+    <b>状态更新（2026-11-14）：</b>接口与自动评分器已部署上线，域名为本站 <code>/cf/v0/</code>。提交作答需持能力密钥（按上闸标准：密钥鉴权 + 限流 + 无敏感字段），作答后自动返回评分、逐项明细与哈希；只读查询免密钥。白车身示例题已实测两轮：合规作答满分 1.0，违规作答（横穿涂装停机区）一票否决归零。物理引擎闭环（真实碰撞、ROS 接入）属后续阶段，届时本标准在 <code>initial_state</code> 与检查项上向后兼容扩展。
+  </div>
+  <p><strong>已完成的验证（2026-11-14）：</strong>标准全文已按 02 节示例题走通自动化全链——公网提交作答，自动评分、自动哈希、自动落台账，两轮对照（合规/违规）均符合预期。任何人可访问只读查询接口核验历史评分与证据哈希。</p>
+</section>
+
+<footer>CF-TASK/SUBMIT/RUN SPEC V0.1 · 2026-11-14 · CYBERFORGE TRAINING GROUND</footer>
+</div>
+</body>
+</html>

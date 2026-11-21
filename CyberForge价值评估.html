@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberForge 作品价值评估</title>
+<!--
+设计判断：
+1. 视觉锚点：工业极简。取自 CyberForge 数字孪生车间的语言——工程图纸网格、墨黑主导色、安全橙强调色、等宽字号的档案编号做章节标记。调色、纹理、标记统一由这一个锚点管理。
+2. 封面策略：超尺度标题锁合。开场句「能不能，测一下就知道」用非常规大字号成为主视觉，分三行排布带轻微不对称，写完直接接导语；无图，不用色块冒充图片。
+3. 编辑标记：档案编号（CF-EVAL-01 起）贯穿各章节，等宽字体 + 安全橙下划线，帮助定位论点与证据。
+-->
+<style>
+:root{
+  --ink:#16191d;
+  --ink-soft:#3d434b;
+  --ink-faint:#6b7280;
+  --paper:#f4f2ed;
+  --paper-deep:#ebe8e0;
+  --accent:#e07b1f;
+  --accent-deep:#b45a10;
+  --line:#c9c4b8;
+  --grid:rgba(22,25,29,.055);
+  --serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.85;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;}
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 22px;}
+@media (min-width:760px){.wrap{max-width:760px;}}
+
+/* ---------- 封面 ---------- */
+.cover{padding:64px 0 40px;}
+.kicker{
+  font-family:var(--mono);
+  font-size:12px;letter-spacing:.35em;
+  color:var(--accent-deep);
+  text-transform:uppercase;
+  display:flex;align-items:center;gap:12px;
+  animation:rise .7s ease both;
+}
+.kicker::after{content:"";flex:1;height:1px;background:var(--line);}
+.cover h1{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:clamp(52px,15vw,96px);
+  line-height:1.12;
+  letter-spacing:.01em;
+  margin-top:28px;
+  animation:rise .8s .12s ease both;
+}
+.cover h1 .l2{display:block;padding-left:.6em;color:var(--accent-deep);}
+.cover h1 .l3{display:block;padding-left:1.2em;}
+.cover .verdict{
+  margin-top:26px;
+  font-family:var(--mono);
+  font-size:13.5px;line-height:2;
+  color:var(--ink-soft);
+  border-left:3px solid var(--accent);
+  padding-left:14px;
+  animation:rise .8s .24s ease both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+/* ---------- 章节骨架 ---------- */
+section{padding:52px 0 8px;}
+.tagnote{
+  font-family:var(--mono);
+  font-size:12px;letter-spacing:.22em;
+  color:var(--accent-deep);
+  margin-bottom:14px;
+}
+.tagnote b{
+  font-weight:600;
+  color:var(--paper);
+  background:var(--ink);
+  padding:2px 8px;margin-right:10px;
+}
+h2{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:27px;line-height:1.4;
+  margin-bottom:18px;
+}
+h3{
+  font-family:var(--serif);
+  font-size:19px;
+  margin:30px 0 10px;
+}
+p{margin-bottom:16px;color:var(--ink-soft);}
+p strong,li strong{color:var(--ink);}
+.lede{font-size:17.5px;color:var(--ink);}
+
+/* 引文块 */
+.pull{
+  font-family:var(--serif);
+  font-size:21px;line-height:1.7;
+  color:var(--ink);
+  margin:30px 0;
+  padding:4px 0 4px 18px;
+  border-left:3px solid var(--accent);
+}
+
+/* 数据行 */
+.factline{
+  display:flex;gap:14px;align-items:baseline;
+  padding:14px 0;
+  border-bottom:1px dashed var(--line);
+  font-size:15px;
+}
+.factline dt{
+  font-family:var(--mono);font-size:12px;
+  color:var(--accent-deep);
+  min-width:96px;flex-shrink:0;letter-spacing:.08em;
+}
+.factline dd{color:var(--ink-soft);}
+
+/* 对位表 */
+.tablewrap{overflow-x:auto;margin:24px 0;}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:14px;min-width:560px;
+  background:rgba(255,255,255,.5);
+}
+th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);}
+th{
+  font-family:var(--mono);font-size:12px;letter-spacing:.1em;
+  color:var(--paper);background:var(--ink);
+  font-weight:600;white-space:nowrap;
+}
+td:first-child{font-weight:600;color:var(--ink);white-space:nowrap;}
+.hit{color:var(--accent-deep);font-weight:600;}
+.miss{color:var(--ink-faint);}
+
+/* 路径列表 */
+.path{list-style:none;margin:22px 0;}
+.path li{
+  position:relative;
+  padding:14px 0 14px 54px;
+  border-bottom:1px dashed var(--line);
+}
+.path .no{
+  position:absolute;left:0;top:16px;
+  font-family:var(--mono);font-size:13px;
+  color:var(--accent-deep);font-weight:600;
+}
+.path b{display:block;font-size:16px;color:var(--ink);margin-bottom:2px;}
+.path span{font-size:14.5px;color:var(--ink-soft);}
+
+/* 分层定位 */
+.bands{margin:26px 0;}
+.band{
+  padding:16px 18px;margin-bottom:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.55);
+  border-left:4px solid var(--line);
+}
+.band.hot{border-left-color:var(--accent);background:rgba(224,123,31,.08);}
+.band b{display:block;font-family:var(--serif);font-size:17px;margin-bottom:4px;color:var(--ink);}
+.band p{margin:0;font-size:14.5px;}
+
+/* 来源与异议 */
+.sources{margin-top:10px;}
+.sources li{
+  font-family:var(--mono);font-size:12.5px;line-height:1.9;
+  color:var(--ink-faint);list-style:none;
+  padding:6px 0;border-bottom:1px solid rgba(201,196,184,.5);
+}
+.sources li b{color:var(--ink-soft);font-weight:600;}
+.caveat{
+  margin:28px 0 60px;
+  padding:18px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.4);
+  font-size:14px;color:var(--ink-faint);
+}
+.caveat b{color:var(--ink-soft);}
+footer{
+  padding:26px 0 56px;
+  font-family:var(--mono);font-size:12px;
+  color:var(--ink-faint);letter-spacing:.12em;
+}
+footer .bar{height:1px;background:var(--ink);margin-bottom:18px;}
+</style>
+</head>
+<body data-visualization-style="general-editorial">
+
+<div class="wrap">
+
+<!-- 封面 -->
+<header class="cover">
+  <div class="kicker">CYBERFORGE · 作品价值评估</div>
+  <h1>能不能，<span class="l2">测一下</span><span class="l3">就知道</span></h1>
+  <div class="verdict">
+    评估日期 2026-11-14 ｜ AHOLO Global 3D AI Hackathon 参赛作品<br>
+    结论先行：按主流工业数字孪生标准是演示级；<br>
+    按「智能体训练评测场」新赛道标准，有真实且在用的差异化。
+  </div>
+</header>
+
+<!-- 导语 -->
+<section>
+  <p class="lede">这篇页面回答一个问题：<strong>CyberForge 这个作品，放到整个行业里评，它处在什么位置、值多少、下一步往哪走。</strong>评估只用两类依据——已发布的行业标准文本，和头部厂商的公开实践——不掺愿望。</p>
+</section>
+
+<!-- 01 行业的尺子 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-01</b>行业的尺子</div>
+  <h2>主流行业拿什么量数字孪生</h2>
+  <p>工业数字孪生目前有两条评估线，一条是标准文本，一条是头部实践。</p>
+  <h3>标准线</h3>
+  <p>制造数字孪生的权威框架是 ISO 23247 系列。<strong>2026 年 7 月发布第 6 部分「数字孪生组成」</strong>，规定孪生组件的识别、封装、集成与编排，核心目标是互操作性与组件重用；<strong>编制中的第 7 部分</strong>进一步要求孪生投入运行前验证频率、时延与保真度是否达标。国内对标 <strong>GB/T 46237-2025「数字孪生能力成熟度模型」</strong>，2026 年 5 月起实施，行业整体进入标准化阶段。</p>
+  <h3>实践线：两类头部打法</h3>
+  <p>一类是 <strong>NVIDIA Omniverse</strong> 的平台级路线——宝马用它构建整厂级数字孪生，靠物理级精度、OpenUSD 生态与跨软件互通取胜；另一类是 <strong>51WORLD</strong> 的数据驱动路线——按收入计为国内最大的数字孪生方案商，动力、激光雷达、摄像机仿真的置信度公开标到 90% 以上。业界评估厂商的方式，已经从「三维场景像不像」变成六个问题：</p>
+  <div class="pull">有没有自己的平台？能不能连真实数据？能不能描述真实空间？能不能仿真预测？AI 能否参与决策？系统能否进入业务闭环？</div>
+</section>
+
+<!-- 02 六维对位 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-02</b>六维对位</div>
+  <h2>拿这把尺子量 CyberForge</h2>
+  <p>逐项对位的结果如下——前四项都不占，后两项超出预期。</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>评估维度</th><th>主流要求</th><th>CyberForge 现状</th></tr>
+    <tr><td>数据接入</td><td>连接真实产线、实时遥测驱动</td><td class="miss">无真实产线数据，使用模拟数据</td></tr>
+    <tr><td>物理保真</td><td>物理级精度，时延与保真度可验证</td><td class="miss">网页级仿真；URDF 机械臂有运动学，无物理引擎深度</td></tr>
+    <tr><td>规模与生态</td><td>整厂级规模，OpenUSD 互操作</td><td class="miss">52 件资产的单车间，自建资产格式</td></tr>
+    <tr><td>业务闭环</td><td>接入 ERP / MES 驱动真实决策</td><td class="miss">不涉及</td></tr>
+    <tr><td>可验证性</td><td>保真度声明须可核验</td><td class="hit">OEE 算例可复算、安全阈值标注来源、缺陷从发现到修复全程可回溯</td></tr>
+    <tr><td>AI 智能体场景</td><td>行业新兴方向，多数仍在概念期</td><td class="hit">已真实运行：持续出题、训练、验收具身智能任务</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 03 定位 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-03</b>诚实的定位</div>
+  <h2>按赛道分层看，它在哪一格</h2>
+  <div class="bands">
+    <div class="band">
+      <b>产线数字孪生赛道 —— 演示级原型</b>
+      <p>Omniverse 是平台级产品，宝马拿它建真工厂的孪生。CyberForge 与这类产品不在一个量级，也不必去比。这个定位不需要回避。</p>
+    </div>
+    <div class="band hot">
+      <b>智能体训练评测场赛道 —— 有真实差异化，且已在用</b>
+      <p>轻量到浏览器打开就能用的具身智能体训练场，目前市面上几乎空位；CyberForge 已经在真实出题、训练、验收，不是概念演示。</p>
+    </div>
+  </div>
+  <p>换句话说：它最大的价值证据，不是「做得像不像宝马」，而是<strong>「这个车间能持续生成可验证的具身智能任务，并且缺陷-修复链条全留痕」</strong>。训练场版与完整版两版并存本身就是证据，而不是缺陷。</p>
+</section>
+
+<!-- 04 评测架构 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-04</b>评测架构的共性</div>
+  <h2>为什么说它本质是一套评测体系</h2>
+  <p>通用大模型、AI 智能体、个人 AI 助手，多数并不天然具备具身工业能力——能不能操作设备、能不能按节拍完成工位任务、能不能在异常时正确停机，这些<strong>无法靠对话题打分来证明，只能放进真实环境测</strong>。CyberForge 车间正好提供了这个「测」的场地：任务从车间生成，作答在车间发生，结果在车间核验。</p>
+  <div class="pull">你具不具备这个能力，不用辩论——放到车间里测一下就知道。</div>
+  <p>这个「出题—作答—核验—留痕」的闭环，和正在建设的智能体安全治理评测体系（准入拒绝、投毒抵抗、越权执行、异常停机、结果正确性五维）是<strong>同一套方法论</strong>：可验证的过程评测，而非自述式的结果宣称。两件事互相印证：一个测安全治理，一个测具身作业能力，共享同一套评测骨架。</p>
+</section>
+
+<!-- 05 完善路径 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-05</b>完善路径</div>
+  <h2>接下来怎么把价值做实</h2>
+  <p>方向不是和 Omniverse 拼保真度，而是沿「训练场」纵深走。按投入产出排序：</p>
+  <ul class="path">
+    <li><span class="no">PATH-1</span><b>出题—作答—评分链路标准化</b>
+      <span>这是评测场成为「体系」的第一步：任务格式、提交接口、评分口径固定下来，任何智能体都能即插即测。当前成本最低、收益最大。</span></li>
+    <li><span class="no">PATH-2</span><b>接入真实物理与执行闭环</b>
+      <span>加物理引擎碰撞、接 ROS 或仿真器，让「异常停机」「节拍作业」这类任务有真实物理后果，评测结论才从「演示可信」升级为「运行可信」。</span></li>
+    <li><span class="no">PATH-3</span><b>把可验证性做成对外可查的证据链</b>
+      <span>OEE 复算、阈值引用、缺陷回溯已具雏形，下一步是把每次评测记录固化为可公开核验的档案——这正是与主流产品拉开差异的地方。</span></li>
+    <li><span class="no">PATH-4</span><b>扩大题库与场景覆盖</b>
+      <span>在闭环稳定后再扩资产与工位种类，让评测覆盖面从单一焊装-涂装-总装车间，扩展到更多工业任务类型。放在最后，避免过早堆规模。</span></li>
+  </ul>
+</section>
+
+<!-- 来源 -->
+<section>
+  <div class="tagnote"><b>CF-EVAL-06</b>依据与边界</div>
+  <h2>来源与未竟之处</h2>
+  <ul class="sources">
+    <li><b>ISO 23247-6:2026</b> 《自动化系统和集成—制造用数字孪生框架—第6部分：数字孪生组成》，ISO 2026-07-14 发布</li>
+    <li><b>ISO/AWI 23247-7</b> 孪生投运验证程序（频率、时延、保真度要求），编制中，iso.org</li>
+    <li><b>GB/T 46237-2025</b> 《信息技术 数字孪生能力成熟度模型》，2026-05-01 实施（据行业公开报道）</li>
+    <li><b>NVIDIA Omniverse</b> 宝马整厂数字孪生等公开应用案例，NVIDIA 官网与公开资料</li>
+    <li><b>51WORLD</b> 国内数字孪生方案市场份额与仿真置信度，公开报道（弗若斯特沙利文口径）</li>
+  </ul>
+  <div class="caveat">
+    <b>边界说明：</b>本页为 2026-11-14 的静态评估快照。标准文本条目以官方发布为准；市场份额与置信度数字引自公开报道，未经独立审计；「智能体训练评测场赛道接近空位」是基于公开检索的判断，不排除未公开的同类实践。六维对位中的「现状」列以作品提交材料与线上演示核验为准。
+  </div>
+</section>
+
+<footer>
+  <div class="bar"></div>
+  CYBERFORGE VALUE ASSESSMENT · CF-EVAL · 2026-11-14
+</footer>
+
+</div>
+</body>
+</html>
